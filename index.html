@@ -256,7 +256,312 @@
         </div>
     </section>
 
-  
+    <!-- Premium Recommendations Section -->
+    <section id="recommendations" class="py-20 bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-12">
+                <div
+                    class="inline-block p-4 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full mb-4 shadow-2xl">
+                    <span class="text-5xl">🤖</span>
+                </div>
+                <h2 class="text-4xl md:text-5xl font-black mb-4" style="color: var(--color-dark-gray);">اقتراحات ذكية
+                    بتقنية AI
+                </h2>
+                <p class="text-xl text-gray-600">خوارزميات متطورة تحلل الطقس والموسم لاختيار الرحلة المثالية</p>
+            </div>
+
+            <div id="recommendedTripContainer" class="max-w-5xl mx-auto"></div>
+        </div>
+    </section>
+
+    <!-- NASA Dashboard -->
+    <section id="nasa-dashboard" class="py-20 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-12">
+                <div class="inline-block p-4 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full mb-4">
+                    <span class="text-5xl">🛰️</span>
+                </div>
+                <h2 class="text-4xl md:text-5xl font-black text-gray-800 mb-4">توقعات الطقس الذكية</h2>
+                <p class="text-xl text-gray-600">مدعومة ببيانات NASA POWER</p>
+            </div>
+
+            <div class="max-w-6xl mx-auto">
+                <div class="bg-white rounded-3xl shadow-2xl overflow-hidden">
+                    <div class="bg-gradient-to-r from-blue-600 to-purple-600 p-8 text-white">
+                        <h3 class="text-2xl font-bold mb-6">اختر الموقع والتاريخ</h3>
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-semibold mb-2 text-blue-100">المكان (أو
+                                    إحداثيات)</label>
+                                <input id="place" type="text" placeholder="القاهرة، الإسكندرية، أو 30.0444, 31.2357"
+                                    class="w-full px-4 py-3 rounded-xl border-2 border-white/30 bg-white/10 backdrop-blur text-white placeholder-white/60 focus:border-white focus:outline-none transition">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold mb-2 text-blue-100">التاريخ المطلوب</label>
+                                <input id="date" type="date"
+                                    class="w-full px-4 py-3 rounded-xl border-2 border-white/30 bg-white/10 backdrop-blur text-white focus:border-white focus:outline-none transition">
+                            </div>
+                        </div>
+                        <button onclick="loadNASAData()"
+                            class="mt-6 w-full md:w-auto px-8 py-4 bg-white text-blue-600 font-bold rounded-xl hover:shadow-2xl transform hover:scale-105 transition">
+                            تحليل البيانات
+                        </button>
+                    </div>
+
+                    <div class="p-6">
+                        <div class="mb-6">
+                            <label class="block text-sm font-semibold mb-2 text-gray-700">حدد الموقع على الخريطة</label>
+                            <div id="map"></div>
+                        </div>
+                    </div>
+
+                    <div id="resultsContainer" class="p-8 hidden">
+                        <div class="relative">
+                            <div id="loadingOverlay" class="loading-overlay hidden">
+                                <div class="text-center">
+                                    <div class="spinner mb-4"></div>
+                                    <p class="text-white font-semibold">جاري تحليل بيانات NASA...</p>
+                                </div>
+                            </div>
+
+                            <div id="results" class="mb-6"></div>
+
+                            <div class="bg-gray-50 rounded-2xl p-6 mb-6">
+                                <h4 class="text-xl font-bold text-gray-800 mb-4">الرسم البياني التاريخي</h4>
+                                <canvas id="nasaChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Trips Section -->
+    <section id="trips" class="py-20 bg-gray-50">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-12">
+                <h2 class="text-4xl md:text-5xl font-black mb-4" style="color: var(--color-dark-gray);">الرحلات المميزة
+                </h2>
+                <p class="text-xl" style="color: var(--color-dark-gray); opacity: 0.7;">اختر رحلتك المثالية</p>
+            </div>
+            <div class="flex gap-3 overflow-x-auto pb-4 mb-8 justify-center">
+                <button onclick="filterTrips('الكل')"
+                    class="filter-btn active px-6 py-2 rounded-full font-semibold whitespace-nowrap"
+                    style="background: white; color: var(--color-dark-gray);">الكل</button>
+                <button onclick="filterTrips('صحراوية')"
+                    class="filter-btn px-6 py-2 rounded-full font-semibold whitespace-nowrap"
+                    style="background: white; color: var(--color-dark-gray);">صحراوية</button>
+                <button onclick="filterTrips('بحرية')"
+                    class="filter-btn px-6 py-2 rounded-full font-semibold whitespace-nowrap"
+                    style="background: white; color: var(--color-dark-gray);">بحرية</button>
+                <button onclick="filterTrips('أثرية')"
+                    class="filter-btn px-6 py-2 rounded-full font-semibold whitespace-nowrap"
+                    style="background: white; color: var(--color-dark-gray);">أثرية</button>
+            </div>
+            <div id="tripsContainer" class="grid md:grid-cols-2 lg:grid-cols-3 gap-8"></div>
+        </div>
+    </section>
+
+    <!-- Trip Details Modal -->
+    <div id="tripModal" class="hidden fixed inset-0 bg-black/50 z-50 overflow-y-auto">
+        <div class="min-h-screen px-4 py-8">
+            <div class="max-w-4xl mx-auto bg-white rounded-3xl shadow-2xl overflow-hidden relative">
+                <button onclick="closeModal()"
+                    class="absolute top-4 right-4 z-10 bg-white rounded-full p-3 shadow-lg hover:bg-gray-100 transition">
+                    <span class="text-2xl font-bold">×</span>
+                </button>
+                <div id="modalContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Modal -->
+    <div id="paymentModal" class="hidden fixed inset-0 bg-black/50 z-50 overflow-y-auto">
+        <div class="min-h-screen px-4 py-8 flex items-center justify-center">
+            <div class="max-w-2xl w-full bg-white rounded-3xl shadow-2xl overflow-hidden">
+                <div class="bg-gradient-to-r from-green-600 to-blue-600 p-6 text-white">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-2xl font-bold">الدفع الآمن</h3>
+                        <button onclick="closePaymentModal()"
+                            class="text-white text-3xl hover:bg-white/20 rounded-full w-10 h-10">×</button>
+                    </div>
+                </div>
+                <div id="paymentContent" class="p-8"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Premium Section -->
+    <section id="premium" class="py-20 bg-gradient-to-br from-purple-900 via-indigo-900 to-blue-900 text-white">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-12">
+                <div class="inline-block p-4 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full mb-4">
+                    <span class="text-5xl">👑</span>
+                </div>
+                <h2 class="text-4xl md:text-5xl font-black mb-4">اشتراك Premium</h2>
+                <p class="text-xl text-blue-200">احصل على مزايا حصرية</p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                <div
+                    class="bg-white/10 backdrop-blur rounded-3xl p-8 border-2 border-white/20 hover:border-yellow-400 transition transform hover:scale-105">
+                    <div class="text-center mb-6">
+                        <h3 class="text-2xl font-bold mb-2">شهري</h3>
+                        <div class="text-5xl font-black mb-2">$29</div>
+                        <p class="text-blue-200">شهرياً</p>
+                    </div>
+                    <ul class="space-y-3 mb-8">
+                        <li class="flex items-center gap-2"><span class="text-green-400">✓</span><span>خصم 10%</span>
+                        </li>
+                        <li class="flex items-center gap-2"><span class="text-green-400">✓</span><span>تقارير طقس</span>
+                        </li>
+                        <li class="flex items-center gap-2"><span class="text-green-400">✓</span><span>إلغاء
+                                مجاني</span></li>
+                        <li class="flex items-center gap-2"><span class="text-green-400">✓</span><span>دعم 24/7</span>
+                        </li>
+                        <li class="flex items-center gap-2"><span class="text-yellow-300">🤖</span><span>اقتراحات AI
+                                ذكية</span></li>
+                    </ul>
+                    <button onclick="subscribePremium('monthly')"
+                        class="w-full py-4 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl font-bold hover:shadow-2xl transition">اشترك
+                        الآن</button>
+                </div>
+
+                <div
+                    class="relative bg-gradient-to-br from-yellow-400 to-orange-500 rounded-3xl p-8 border-4 border-yellow-300 transform md:scale-110 shadow-2xl">
+                    <div
+                        class="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-red-600 text-white px-6 py-2 rounded-full font-bold text-sm">
+                        الأكثر شعبية</div>
+                    <div class="text-center mb-6 text-gray-900">
+                        <h3 class="text-2xl font-bold mb-2">سنوي</h3>
+                        <div class="text-5xl font-black mb-2">$249</div>
+                        <p class="text-gray-700">سنوياً (وفر $99)</p>
+                    </div>
+                    <ul class="space-y-3 mb-8 text-gray-900">
+                        <li class="flex items-center gap-2"><span class="text-green-600">✓</span><span
+                                class="font-semibold">خصم 25%</span></li>
+                        <li class="flex items-center gap-2"><span class="text-green-600">✓</span><span
+                                class="font-semibold">توقعات AI متقدمة</span></li>
+                        <li class="flex items-center gap-2"><span class="text-green-600">✓</span><span
+                                class="font-semibold">اقتراحات ذكية للرحلات</span></li>
+                        <li class="flex items-center gap-2"><span class="text-green-600">✓</span><span
+                                class="font-semibold">حجز مبكر</span></li>
+                        <li class="flex items-center gap-2"><span class="text-green-600">✓</span><span
+                                class="font-semibold">ترقية غرف</span></li>
+                        <li class="flex items-center gap-2"><span class="text-green-600">✓</span><span
+                                class="font-semibold">تأمين شامل</span></li>
+                    </ul>
+                    <button onclick="subscribePremium('yearly')"
+                        class="w-full py-4 bg-gray-900 text-white rounded-xl font-bold hover:bg-gray-800 transition shadow-xl">اشترك
+                        ووفر</button>
+                </div>
+
+                <div
+                    class="bg-white/10 backdrop-blur rounded-3xl p-8 border-2 border-white/20 hover:border-yellow-400 transition transform hover:scale-105">
+                    <div class="text-center mb-6">
+                        <h3 class="text-2xl font-bold mb-2">عائلي</h3>
+                        <div class="text-5xl font-black mb-2">$399</div>
+                        <p class="text-blue-200">سنوياً (5 أفراد)</p>
+                    </div>
+                    <ul class="space-y-3 mb-8">
+                        <li class="flex items-center gap-2"><span class="text-green-400">✓</span><span>كل مزايا
+                                السنوية</span></li>
+                        <li class="flex items-center gap-2"><span class="text-green-400">✓</span><span>5 حسابات</span>
+                        </li>
+                        <li class="flex items-center gap-2"><span class="text-green-400">✓</span><span>خصم 10%
+                                أطفال</span></li>
+                        <li class="flex items-center gap-2"><span class="text-green-400">✓</span><span>مخطط عائلي</span>
+                        </li>
+                        <li class="flex items-center gap-2"><span class="text-yellow-300">🤖</span><span>اقتراحات AI
+                                للجميع</span></li>
+                    </ul>
+                    <button onclick="subscribePremium('family')"
+                        class="w-full py-4 bg-gradient-to-r from-purple-500 to-pink-600 rounded-xl font-bold hover:shadow-2xl transition">اشترك
+                        الآن</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="py-20 bg-gradient-to-br from-gray-50 to-blue-50">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-12">
+                <h2 class="text-4xl md:text-5xl font-black mb-4" style="color: var(--color-dark-gray);">اتصل بنا</h2>
+                <p class="text-xl text-gray-600">نحن هنا لمساعدتك</p>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-12 max-w-6xl mx-auto">
+                <div class="space-y-8">
+                    <div class="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition">
+                        <div class="flex items-center gap-4">
+                            <div
+                                class="text-4xl bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full w-16 h-16 flex items-center justify-center">
+                                📍</div>
+                            <div>
+                                <h3 class="text-xl font-bold text-gray-800 mb-1">العنوان</h3>
+                                <p class="text-gray-600">جامعة سوهاج، سوهاج، مصر</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition">
+                        <div class="flex items-center gap-4">
+                            <div
+                                class="text-4xl bg-gradient-to-br from-green-400 to-blue-500 rounded-full w-16 h-16 flex items-center justify-center">
+                                📞</div>
+                            <div>
+                                <h3 class="text-xl font-bold text-gray-800 mb-1">اتصل بنا</h3>
+                                <p class="text-gray-600">+20 100 123 4567</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition">
+                        <div class="flex items-center gap-4">
+                            <div
+                                class="text-4xl bg-gradient-to-br from-purple-400 to-pink-500 rounded-full w-16 h-16 flex items-center justify-center">
+                                ✉️</div>
+                            <div>
+                                <h3 class="text-xl font-bold text-gray-800 mb-1">البريد الإلكتروني</h3>
+                                <p class="text-gray-600">safesafari@gmail.com</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl p-8 shadow-xl">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-6">أرسل لنا رسالة</h3>
+                    <form onsubmit="sendMessage(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">الاسم</label>
+                            <input type="text" id="contactName"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-green-500 focus:border-green-500 transition"
+                                placeholder="اسمك الكامل" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">البريد الإلكتروني</label>
+                            <input type="email" id="contactEmail"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-green-500 focus:border-green-500 transition"
+                                placeholder="example@domain.com" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">الرسالة</label>
+                            <textarea id="contactMessage" rows="4"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-green-500 focus:border-green-500 transition"
+                                placeholder="اكتب رسالتك هنا..." required></textarea>
+                        </div>
+                        <button type="submit"
+                            class="w-full py-4 btn-primary text-white font-bold rounded-xl hover:shadow-lg transition">أرسل
+                            الرسالة</button>
+                    </form>
+                    <div id="contactMessageStatus" class="mt-4 text-center font-semibold hidden"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- Footer -->
     <footer class="bg-gray-900 text-white py-12">
         <div class="container mx-auto px-6">

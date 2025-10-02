@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
-
 <head>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#4A7C59">
@@ -18,7 +17,6 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap');
@@ -97,6 +95,10 @@
                 transform: translateY(0);
             }
         }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--color-green), var(--color-green-dark));
+        }
     </style>
 </head>
 
@@ -133,8 +135,7 @@
                             class="px-4 py-2 rounded-lg transition text-red-600 hover:bg-red-50">تسجيل خروج</button>
                     </div>
                     <button id="signInBtn" onclick="signInWithGoogle()"
-                        class="px-6 py-2 bg-gradient-to-r from-green-600 to-green-700 text-white font-bold rounded-lg hover:shadow-lg transition">تسجيل
-                        دخول</button>
+                        class="px-6 py-2 btn-primary text-white font-bold rounded-lg hover:shadow-lg transition">تسجيل دخول</button>
                     <button class="md:hidden text-2xl" style="color: var(--color-dark-gray);"
                         onclick="toggleMobileMenu()">☰</button>
                 </div>
@@ -161,7 +162,7 @@
                     <span class="text-5xl">🛰️</span>
                 </div>
                 <h2 class="text-4xl md:text-5xl font-black text-gray-800 mb-4">توقعات الطقس الذكية</h2>
-                <p class="text-xl text-gray-600">مدعومة ببيانات NASA POWER</p>
+                <p class="text-xl text-gray-600">مدعومة ببيانات NASA POWER الحقيقية</p>
             </div>
 
             <div class="max-w-6xl mx-auto">
@@ -182,7 +183,7 @@
                         </div>
                         <button onclick="loadNASAData()"
                             class="mt-6 w-full md:w-auto px-8 py-4 bg-white text-blue-600 font-bold rounded-xl hover:shadow-2xl transform hover:scale-105 transition">
-                            تحليل البيانات
+                            تحليل البيانات من NASA
                         </button>
                     </div>
 
@@ -198,14 +199,14 @@
                             <div id="loadingOverlay" class="loading-overlay hidden">
                                 <div class="text-center">
                                     <div class="spinner mb-4"></div>
-                                    <p class="text-white font-semibold">جاري تحليل بيانات NASA...</p>
+                                    <p class="text-white font-semibold">جاري تحليل بيانات NASA POWER...</p>
                                 </div>
                             </div>
 
                             <div id="results" class="mb-6"></div>
 
                             <div class="bg-gray-50 rounded-2xl p-6 mb-6">
-                                <h4 class="text-xl font-bold text-gray-800 mb-4">الرسم البياني التاريخي</h4>
+                                <h4 class="text-xl font-bold text-gray-800 mb-4">الرسم البياني التاريخي (آخر 7 أيام)</h4>
                                 <canvas id="nasaChart"></canvas>
                             </div>
                         </div>
@@ -312,7 +313,9 @@
         function initMap() {
             if (map) map.remove();
             map = L.map('map').setView([26.8206, 30.8025], 6);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap'
+            }).addTo(map);
             
             map.on('click', function(e) {
                 if (marker) map.removeLayer(marker);
@@ -321,11 +324,12 @@
             });
         }
 
-        function loadNASAData() {
+        // NASA POWER API Integration
+        async function loadNASAData() {
             const place = document.getElementById('place').value;
-            const date = document.getElementById('date').value;
+            const dateInput = document.getElementById('date').value;
 
-            if (!place || !date) {
+            if (!place || !dateInput) {
                 alert('الرجاء إدخال الموقع والتاريخ');
                 return;
             }
@@ -335,64 +339,191 @@
             resultsContainer.classList.remove('hidden');
             loadingOverlay.classList.remove('hidden');
 
-            setTimeout(() => {
+            try {
+                // Parse coordinates
+                let lat, lon;
+                const coords = place.split(',').map(s => s.trim());
+                
+                if (coords.length === 2 && !isNaN(coords[0]) && !isNaN(coords[1])) {
+                    lat = parseFloat(coords[0]);
+                    lon = parseFloat(coords[1]);
+                } else {
+                    // Geocode city name using Nominatim
+                    const geoResponse = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(place)}&format=json&limit=1`);
+                    const geoData = await geoResponse.json();
+                    
+                    if (geoData.length === 0) {
+                        throw new Error('لم يتم العثور على الموقع');
+                    }
+                    
+                    lat = parseFloat(geoData[0].lat);
+                    lon = parseFloat(geoData[0].lon);
+                }
+
+                // Format dates for NASA API (YYYYMMDD)
+                const selectedDate = new Date(dateInput);
+                const endDate = selectedDate.toISOString().split('T')[0].replace(/-/g, '');
+                
+                // Get 7 days before for historical data
+                const startDate = new Date(selectedDate);
+                startDate.setDate(startDate.getDate() - 7);
+                const startDateStr = startDate.toISOString().split('T')[0].replace(/-/g, '');
+
+                // NASA POWER API call
+                const nasaUrl = `https://power.larc.nasa.gov/api/temporal/daily/point?parameters=T2M,RH2M,WS2M,PRECTOTCORR&community=RE&longitude=${lon}&latitude=${lat}&start=${startDateStr}&end=${endDate}&format=JSON`;
+                
+                const nasaResponse = await fetch(nasaUrl);
+                const nasaData = await nasaResponse.json();
+
+                if (!nasaData.properties || !nasaData.properties.parameter) {
+                    throw new Error('لم يتم استرجاع البيانات من NASA');
+                }
+
+                const params = nasaData.properties.parameter;
+                
+                // Get latest data
+                const dates = Object.keys(params.T2M).sort();
+                const latestDate = dates[dates.length - 1];
+                
+                const temp = params.T2M[latestDate];
+                const humidity = params.RH2M[latestDate];
+                const wind = params.WS2M[latestDate];
+                const precip = params.PRECTOTCORR[latestDate];
+
+                // Determine safety
+                let safety = 'آمن';
+                if (temp < 10 || temp > 40 || wind > 10 || precip > 10) {
+                    safety = 'متوسط';
+                }
+                if (temp < 5 || temp > 45 || wind > 15 || precip > 20) {
+                    safety = 'غير آمن';
+                }
+
                 loadingOverlay.classList.add('hidden');
-                const weatherData = {
-                    temp: Math.floor(Math.random() * 15) + 20,
-                    humidity: Math.floor(Math.random() * 40) + 30,
-                    wind: (Math.random() * 5 + 2).toFixed(1),
-                    safety: Math.random() > 0.3 ? 'آمن' : 'متوسط'
-                };
 
                 document.getElementById('results').innerHTML = `
                     <div class="grid md:grid-cols-4 gap-4 fade-in">
                         <div class="bg-gradient-to-br from-orange-400 to-red-500 text-white p-6 rounded-2xl text-center">
                             <div class="text-4xl mb-2">🌡️</div>
-                            <div class="text-3xl font-bold">${weatherData.temp}°C</div>
+                            <div class="text-3xl font-bold">${temp.toFixed(1)}°C</div>
                             <div class="text-sm opacity-90 mt-1">درجة الحرارة</div>
                         </div>
                         <div class="bg-gradient-to-br from-blue-400 to-cyan-500 text-white p-6 rounded-2xl text-center">
                             <div class="text-4xl mb-2">💧</div>
-                            <div class="text-3xl font-bold">${weatherData.humidity}%</div>
+                            <div class="text-3xl font-bold">${humidity.toFixed(1)}%</div>
                             <div class="text-sm opacity-90 mt-1">الرطوبة</div>
                         </div>
                         <div class="bg-gradient-to-br from-green-400 to-teal-500 text-white p-6 rounded-2xl text-center">
                             <div class="text-4xl mb-2">💨</div>
-                            <div class="text-3xl font-bold">${weatherData.wind} m/s</div>
+                            <div class="text-3xl font-bold">${wind.toFixed(1)} m/s</div>
                             <div class="text-sm opacity-90 mt-1">سرعة الرياح</div>
                         </div>
                         <div class="bg-gradient-to-br from-purple-400 to-pink-500 text-white p-6 rounded-2xl text-center">
-                            <div class="text-4xl mb-2">✅</div>
-                            <div class="text-3xl font-bold">${weatherData.safety}</div>
+                            <div class="text-4xl mb-2">${safety === 'آمن' ? '✅' : safety === 'متوسط' ? '⚠️' : '❌'}</div>
+                            <div class="text-3xl font-bold">${safety}</div>
                             <div class="text-sm opacity-90 mt-1">السلامة</div>
                         </div>
                     </div>
+                    <div class="mt-4 p-4 bg-blue-50 rounded-xl">
+                        <p class="text-sm text-gray-700">📍 الموقع: ${lat.toFixed(4)}, ${lon.toFixed(4)} | 📅 البيانات من: ${latestDate}</p>
+                        <p class="text-xs text-gray-500 mt-2">المصدر: NASA POWER Project</p>
+                    </div>
                 `;
-                setupChart();
-            }, 2000);
+
+                setupChart(params, dates);
+
+            } catch (error) {
+                loadingOverlay.classList.add('hidden');
+                alert('حدث خطأ: ' + error.message);
+                console.error('NASA API Error:', error);
+            }
         }
 
-        function setupChart() {
+        function setupChart(params, dates) {
             if (nasaChart) nasaChart.destroy();
+            
+            const temps = dates.map(d => params.T2M[d]);
+            const winds = dates.map(d => params.WS2M[d]);
+            const labels = dates.map(d => {
+                const date = new Date(d.substr(0,4), d.substr(4,2)-1, d.substr(6,2));
+                return date.toLocaleDateString('ar-EG', { month: 'short', day: 'numeric' });
+            });
+
             const ctx = document.getElementById('nasaChart').getContext('2d');
             nasaChart = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: ['اليوم', '+1', '+2', '+3', '+4', '+5', '+6'],
+                    labels: labels,
                     datasets: [{
                         label: 'درجة الحرارة (°C)',
-                        data: [28, 30, 27, 29, 31, 28, 26],
+                        data: temps,
                         borderColor: 'rgb(75, 192, 192)',
-                        tension: 0.4
+                        backgroundColor: 'rgba(75, 192, 192, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }, {
+                        label: 'سرعة الرياح (m/s)',
+                        data: winds,
+                        borderColor: 'rgb(153, 102, 255)',
+                        backgroundColor: 'rgba(153, 102, 255, 0.1)',
+                        tension: 0.4,
+                        fill: true,
+                        yAxisID: 'y1'
                     }]
                 },
-                options: { responsive: true }
+                options: {
+                    responsive: true,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                font: {
+                                    family: 'Cairo',
+                                    size: 14
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            title: {
+                                display: true,
+                                text: 'درجة الحرارة',
+                                font: { family: 'Cairo' }
+                            }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            grid: {
+                                drawOnChartArea: false
+                            },
+                            title: {
+                                display: true,
+                                text: 'سرعة الرياح',
+                                font: { family: 'Cairo' }
+                            }
+                        }
+                    }
+                }
             });
         }
 
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('currentYear').textContent = new Date().getFullYear();
-            setTimeout(initMap, 1000);
+            
+            // Set today's date as default
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('date').value = today;
+            
+            setTimeout(initMap, 500);
         });
     </script>
 </body>
